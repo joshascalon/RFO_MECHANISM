@@ -1,0 +1,2 @@
+RESONANT FIELD OPTIMIZATION MECHANISMS
+https://joshascalon.github.io/RFO_MECHANISM/
