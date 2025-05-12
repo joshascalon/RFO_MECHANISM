@@ -1,0 +1,1960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>RESONANT FIELD OPTIMIZATION</title>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  border: none;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+  position: fixed;
+  font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: filter 1s ease-in-out;
+}
+
+/* Remove animation from .title and .subtitle for intro */
+.title, .subtitle {
+  opacity: 1;
+  transition: opacity 1.2s ease-in-out;
+  /* Add display property to ensure visibility */
+  display: block;
+  /* Add important to ensure visibility */
+  visibility: visible !important;
+}
+
+/* Canvas bloom effect */
+.bloom {
+  filter: brightness(1.05) contrast(1.05) blur(0.5px);
+}
+
+#textOverlay {
+  position: fixed;
+  width: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: center;
+  pointer-events: none;
+  z-index: 1000;
+  color: white;
+  padding: 0 5%;
+}
+
+.title {
+  font-size: 3.5em;
+  font-weight: 100;
+  letter-spacing: 0.2em;
+  margin: 0;
+  text-transform: uppercase;
+  text-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.9),
+    0 0 40px rgba(0, 240, 255, 0.6),
+    0 0 60px rgba(0, 240, 255, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.subtitle {
+  font-size: 1.2em;
+  margin-top: 30px;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.6;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  text-shadow: 
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(0, 240, 255, 0.4),
+    0 2px 3px rgba(0, 0, 0, 0.7);
+}
+
+.meta-text {
+  font-size: 1.25em;
+  margin-top: 40px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
+  opacity: 0;
+  line-height: 1.4;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  text-shadow: 
+    0 0 8px rgba(255, 255, 255, 0.7),
+    0 0 16px rgba(255, 64, 255, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.7);
+  /* Add animation for automatic fade-in after 5 seconds */
+  animation: fadeInMeta 10s forwards;
+}
+
+.electron-flow-text {
+  font-size: 1.6em;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  color: rgba(200, 220, 255, 0.95); /* A slightly different, perhaps cooler white */
+  opacity: 0; /* Start invisible */
+  width: 100%;
+  text-align: center;
+  margin-top: 15px; /* Add some margin to space it from other text if it appears */
+  text-shadow:
+    0 0 10px rgba(200, 220, 255, 0.7),
+    0 0 20px rgba(100, 150, 255, 0.5);
+  /* Transition for fade-in */
+  transition: opacity 0.5s ease-in-out; /* Faster fade-in */
+  /* Add animation for automatic fade-in after 8 seconds */
+  animation: fadeInElectron 10s forwards;
+}
+
+/* New keyframes for meta-text animation */
+@keyframes fadeInMeta {
+  0% { opacity: 0; }
+  30% { opacity: 0; } /* Show earlier: at 3 seconds (30% of 10s) instead of 5s */
+  35% { opacity: 1; } /* Fade in at 3.5 seconds */
+  90% { opacity: 1; } /* Stay visible longer: until 9 seconds (90% of 10s) */
+  100% { opacity: 0; } /* Fade out with the rest */
+}
+
+/* New keyframes for electron-flow-text animation */
+@keyframes fadeInElectron {
+  0% { opacity: 0; }
+  60% { opacity: 0; } /* Show earlier: at 6 seconds (60% of 10s) instead of 8s */
+  65% { opacity: 1; } /* Fade in at 6.5 seconds */
+  90% { opacity: 1; } /* Stay visible longer: until 9 seconds (90% of 10s) */
+  100% { opacity: 0; } /* Fade out with the rest */
+}
+
+.phase-text {
+  font-size: 2.6em;
+  opacity: 0;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  margin: 0;
+  color: white;
+  text-shadow: 
+    0 0 30px rgba(255, 255, 255, 0.9),
+    0 0 50px rgba(255, 64, 255, 0.6),
+    0 0 70px rgba(255, 64, 255, 0.4),
+    0 3px 6px rgba(0, 0, 0, 0.9),
+    0 5px 10px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.flash-text {
+  font-size: 4.5em;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  opacity: 0;
+  animation: flashIn 0.5s ease-out forwards;
+  text-shadow: 
+    0 0 40px rgba(255, 255, 255, 1),
+    0 0 80px rgba(255, 0, 255, 0.8),
+    0 0 120px rgba(255, 0, 255, 0.6),
+    0 4px 8px rgba(0, 0, 0, 1);
+}
+
+.summary-title {
+  font-size: 3em;
+  font-weight: 200;
+  letter-spacing: 0.15em;
+  margin: 0;
+  opacity: 0;
+  animation: fadeIn 3s ease-out forwards;
+  text-shadow: 
+    0 0 30px rgba(255, 255, 255, 0.9),
+    0 0 60px rgba(0, 240, 255, 0.6),
+    0 3px 6px rgba(0, 0, 0, 0.8);
+}
+
+.summary-subtitle {
+  font-size: 2em;
+  margin-top: 20px;
+  opacity: 0;
+  animation: fadeIn 2s ease-out 1.5s forwards;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.8),
+    0 0 40px rgba(255, 64, 255, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes flashIn {
+  0% { 
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.2);
+    text-shadow: 0 0 100px rgba(255, 255, 255, 1);
+  }
+  100% { 
+    opacity: 1;
+    transform: scale(1);
+    text-shadow: 0 0 60px rgba(255, 255, 255, 0.9);
+  }
+}
+
+/* PDF Viewer Styles */
+.pdf-overlay {
+  position: fixed;
+  width: 80%;
+  max-width: 1000px;
+  height: 80%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 20, 0.8);
+  border: 1px solid rgba(100, 150, 255, 0.5);
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(100, 150, 255, 0.3);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  z-index: 2000;
+  overflow: hidden;
+  max-height: 90vh;
+}
+
+.pdf-page {
+  color: white;
+  margin-bottom: 20px;
+  display: none;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  height: 100%;
+}
+
+.pdf-page.active {
+  display: flex;
+  animation: fadeIn 1s ease-out forwards;
+}
+
+.pdf-title {
+  font-size: 2.2em;
+  font-weight: 200;
+  letter-spacing: 0.1em;
+  margin-bottom: 20px;
+  text-shadow: 
+    0 0 15px rgba(255, 255, 255, 0.8),
+    0 0 30px rgba(100, 150, 255, 0.5);
+}
+
+.pdf-content {
+  font-size: 1.2em;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.pdf-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(100, 150, 255, 0.3);
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 0;
+  background: rgba(0,0,20,0.8);
+  z-index: 10;
+}
+
+.nav-button {
+  padding: 10px 20px;
+  background-color: rgba(30, 50, 80, 0.7);
+  color: white;
+  border: 1px solid rgba(100, 150, 255, 0.5);
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+  text-shadow: 0 0 5px rgba(100, 150, 255, 0.5);
+}
+
+.nav-button:hover {
+  background-color: rgba(50, 100, 150, 0.7);
+  box-shadow: 0 0 15px rgba(100, 150, 255, 0.8);
+}
+
+.read-on-button {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 30px;
+  background-color: rgba(30, 50, 80, 0.7);
+  color: white;
+  border: 1px solid rgba(100, 150, 255, 0.5);
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.2em;
+  letter-spacing: 0.1em;
+  opacity: 0;
+  transition: all 0.5s ease;
+  animation: pulseButton 2s infinite alternate;
+  z-index: 1500;
+}
+
+.read-on-button:hover {
+  background-color: rgba(50, 100, 150, 0.7);
+  box-shadow: 0 0 20px rgba(100, 150, 255, 0.8);
+}
+
+@keyframes pulseButton {
+  0% { transform: translateX(-50%) scale(1); box-shadow: 0 0 10px rgba(100, 150, 255, 0.5); }
+  100% { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 20px rgba(100, 150, 255, 0.8); }
+}
+
+.page-indicator {
+  position: absolute;
+  bottom: 15px;
+  right: 30px;
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.audio-toggle {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(30, 50, 80, 0.7);
+  color: white;
+  border: 1px solid rgba(100, 150, 255, 0.5);
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 3000;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  display: block; /* Show the audio toggle button */
+}
+
+.audio-toggle:hover {
+  background-color: rgba(50, 100, 150, 0.7);
+  box-shadow: 0 0 15px rgba(100, 150, 255, 0.8);
+}
+
+/* Intro overlay styles */
+#introOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.95);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  transition: opacity 1.5s ease;
+}
+
+.resonateButton {
+  background-color: rgba(30, 50, 100, 0.5);
+  color: white;
+  border: 1px solid rgba(100, 150, 255, 0.7);
+  border-radius: 8px;
+  padding: 15px 30px;
+  font-size: 1.5em;
+  font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 40px;
+  box-shadow: 0 0 20px rgba(100, 150, 255, 0.4);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+}
+
+.resonateButton:hover {
+  background-color: rgba(50, 100, 180, 0.7);
+  box-shadow: 0 0 30px rgba(100, 150, 255, 0.8);
+  transform: scale(1.05);
+}
+
+.introTitle {
+  font-size: 2.8em;
+  font-weight: 200;
+  letter-spacing: 0.2em;
+  color: white;
+  margin-bottom: 30px;
+  text-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.9),
+    0 0 40px rgba(100, 150, 255, 0.6);
+}
+
+@media (max-width: 600px) {
+  .pdf-overlay {
+    width: 98vw;
+    max-width: 100vw;
+    height: 95vh;
+    max-height: 98vh;
+    padding: 8px;
+  }
+  .pdf-content {
+    font-size: 1em;
+    max-height: 50vh;
+  }
+  .read-on-button {
+    font-size: 1em;
+    padding: 10px 18px;
+  }
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+<div id="textOverlay">
+  <h1 class="title">RESONANT FIELD OPTIMIZATION</h1>
+  <p class="subtitle">is a process of using electromagnetic resonance to interact with the internal dynamics of microelectronic materials.</p>
+  <p class="meta-text">This presentation is being recursively generated via resonance</p>
+  <p class="electron-flow-text">let's look at how electrons flow</p>
+</div>
+
+<button id="readOnButton" class="read-on-button">Read On</button>
+
+<div id="pdfOverlay" class="pdf-overlay">
+  <!-- Page 1 -->
+  <div class="pdf-page" data-page="1">
+    <h2 class="pdf-title">Resonant Field Optimization Mechanisms</h2>
+    <div class="pdf-content">
+      <p>Resonant Field Optimization (RFO) represents a paradigm shift in how we interact with microelectronic materials. Through precise electromagnetic resonance tuning, RFO establishes harmonic coupling with internal semiconductor dynamics, enhancing electron mobility and reducing impedance barriers.</p>
+      
+      <p>Key mechanisms include:</p>
+      <ul>
+        <li>Resonant frequency matching to material-specific electron oscillation patterns</li>
+        <li>Charge carrier pathway optimization through fields of least resistance</li>
+        <li>Quantum tunneling enhancement at critical junction points</li>
+        <li>Thermal noise reduction through coherent field stabilization</li>
+      </ul>
+      
+      <p>These mechanisms together create a self-reinforcing optimization field that persists beyond the initial application.</p>
+    </div>
+  </div>
+  
+  <!-- Page 2 -->
+  <div class="pdf-page" data-page="2">
+    <h2 class="pdf-title">Material Impact Analysis</h2>
+    <div class="pdf-content">
+      <p>The impact of RFO techniques extends across multiple types of semiconductor materials, with measurable improvements in key performance indicators:</p>
+      
+      <h3>Silicon-Based Architectures</h3>
+      <p>- Electron mobility improvement: 12-17%<br>
+      - Junction impedance reduction: 8-15%<br>
+      - Thermal efficiency gains: 7-11%</p>
+      
+      <h3>GaAs and Advanced Compounds</h3>
+      <p>- Signal integrity enhancement: 14-19%<br>
+      - Power efficiency improvement: 9-16%<br>
+      - Noise threshold reduction: 10-18%</p>
+      
+      <p>Most significantly, these optimizations occur without physical modification to the materials themselves, preserving original design specifications while enhancing performance characteristics.</p>
+    </div>
+  </div>
+  
+  <!-- Page 3 -->
+  <div class="pdf-page" data-page="3">
+    <h2 class="pdf-title">Implementation & Applications</h2>
+    <div class="pdf-content">
+      <p>RFO can be implemented across multiple stages of semiconductor operation:</p>
+      
+      <h3>Fabrication Phase</h3>
+      <p>Pre-biasing materials during manufacturing creates aligned pathways for optimal electron flow, setting a performance baseline higher than standard fabrication methods.</p>
+      
+      <h3>Post-Production Optimization</h3>
+      <p>Targeted field application after assembly allows for precision tuning of complete systems, addressing bottlenecks and impedance mismatches that occur during integration.</p>
+      
+      <h3>Runtime Adaptive Field Management</h3>
+      <p>Dynamic field modulation during operation creates responsive performance profiles that adapt to changing computational or processing demands in real time.</p>
+    </div>
+  </div>
+  
+  <!-- Page 4 -->
+  <div class="pdf-page" data-page="4">
+    <h2 class="pdf-title">Future Developments</h2>
+    <div class="pdf-content">
+      <p>As RFO technology matures, several promising research directions emerge:</p>
+      
+      <h3>Quantum Computing Integration</h3>
+      <p>Stabilizing quantum states through resonant fields may extend coherence times by 30-40%, dramatically improving viable computation windows.</p>
+      
+      <h3>Neuromorphic Architecture Enhancement</h3>
+      <p>Applying RFO principles to neural network hardware implementations shows potential for 25% improvement in synaptic weight transfer efficiency.</p>
+      
+      <h3>Self-Healing Circuit Design</h3>
+      <p>Persistent resonant fields can guide electron flow around damaged pathways, creating circuit resilience previously unachievable in conventional designs.</p>
+      
+      <p>The future of RFO lies not just in optimization, but in fundamentally reimagining how electronic systems are designed, with the resonant field as a core architectural consideration rather than a post-production enhancement.</p>
+    </div>
+  </div>
+  
+  <div class="pdf-navigation">
+    <button id="prevButton" class="nav-button">Previous</button>
+    <button id="nextButton" class="nav-button">Next</button>
+  </div>
+  
+  <div class="page-indicator">Page <span id="currentPage">1</span> of 4</div>
+</div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+// Initialize canvas dimensions
+function initCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  return canvas.width > 0 && canvas.height > 0;
+}
+
+if (!initCanvas()) {
+  window.addEventListener('resize', initCanvas);
+}
+
+const w = canvas.width;
+const h = canvas.height;
+const centerX = w / 2;
+const centerY = h / 2;
+
+// Complete phase system with new progression
+const phases = [
+  {
+    id: 0,
+    type: "title",
+    time: 0,
+    duration: 10000,  // Title duration set to 10 seconds
+    text: ["RESONANT FIELD OPTIMIZATION"],
+    subtitle: "is a process of using electromagnetic resonance to interact with the internal dynamics of microelectronic materials.",
+    particles: 40,
+    pattern: "circle",
+    feedback: 0.99,  // High feedback from start
+    blur: 1,
+    rotation: 0
+  },
+  {
+    id: 1,
+    type: "content",
+    time: 10000,
+    duration: 6000,
+    text: ["RFO interacts with internal dynamics", "and microelectronic materials."],
+    particles: 60,
+    pattern: "breathing",
+    feedback: 0.98,
+    blur: 2,
+    rotation: 0.0001
+  },
+  {
+    id: 2,
+    type: "content",
+    time: 16000,
+    duration: 6000,
+    text: ["At first", "the system is unstable."],
+    particles: 80,
+    pattern: "random",
+    feedback: 0.96,
+    blur: 3,
+    rotation: 0.0002
+  },
+  {
+    id: 3,
+    type: "content",
+    time: 22000,
+    duration: 6000,
+    text: ["Charge carriers", "move unpredictably."],
+    particles: 120,
+    pattern: "chaos",
+    feedback: 0.94,
+    blur: 5,
+    rotation: 0.0005
+  },
+  {
+    id: 4,
+    type: "content",
+    time: 28000,
+    duration: 6000,
+    text: ["Vibrational patterns", "are out of phase."],
+    particles: 160,
+    pattern: "waves",
+    feedback: 0.92,
+    blur: 7,
+    rotation: -0.0003
+  },
+  {
+    id: 5,
+    type: "flash",
+    time: 34000,
+    duration: 8000,
+    text: ["RFO ENGAGED"],
+    particles: 200,
+    pattern: "explosion",
+    feedback: 0.88,
+    blur: 10,
+    rotation: 0.003,
+    flash: true
+  },
+  {
+    id: 6,
+    type: "content",
+    time: 42000,
+    duration: 7000,
+    text: ["The system begins", "to sense resonance."],
+    particles: 180,
+    pattern: "converging",
+    feedback: 0.90,
+    blur: 8,
+    rotation: 0.004
+  },
+  {
+    id: 7,
+    type: "content",
+    time: 49000,
+    duration: 7000,
+    text: ["Nodes align;", "motion begins to synchronize."],
+    particles: 150,
+    pattern: "vortex",
+    feedback: 0.92,
+    blur: 6,
+    rotation: 0.003
+  },
+  {
+    id: 8,
+    type: "content",
+    time: 56000,
+    duration: 8000,
+    text: ["A stable harmonic", "structure emerges."],
+    particles: 120,
+    pattern: "harmonic",
+    feedback: 0.94,
+    blur: 4,
+    rotation: 0.002
+  },
+  {
+    id: 9,
+    type: "finale",
+    time: 64000,
+    duration: 8000,
+    text: ["Resonance remains.", "Even after the field fades."],
+    particles: 100,
+    pattern: "mandala",
+    feedback: 0.97,
+    blur: 2,
+    rotation: 0.001
+  },
+  {
+    id: 10,
+    type: "summary",
+    time: 72000,
+    duration: 10000,
+    text: ["Resonant Field Optimization:", "From Chaos to Coherence"],
+    particles: 80,
+    pattern: "perfect",
+    feedback: 0.98,
+    blur: 1,
+    rotation: 0.0005
+  }
+];
+
+let currentPhase = 0;
+let animationStartTime = null; // Initialize to null, we'll set it in the first frame
+let time = 0;
+let globalRotation = 0;
+let morphProgress = 0;
+let lastPattern = "circle";
+let lastTransitionedPhase = -1;
+
+// Initialize system state with bloom effect
+let systemState = {
+  particles: phases[0].particles,
+  pattern: phases[0].pattern,
+  feedback: phases[0].feedback,
+  blur: phases[0].blur,
+  rotation: phases[0].rotation,
+  adaptRate: 0.03, // was 0.01
+  morphRate: 0.012, // was 0.006
+  morphing: false,
+  trailOpacity: 0.5,
+  bloom: false,
+  bloomIntensity: 0,
+  transitionFeedback: null  // Used to override feedback during transitions
+};
+
+// Particles with enhanced trail support
+let particles = [];
+
+// Initialize particles
+function initParticles(count, pattern) {
+  particles = [];
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 / count) * i;
+    const radius = 50 + Math.random() * 200;
+    
+    let x, y, vx, vy;
+    
+    switch(pattern) {
+      case 'circle':
+      case 'perfect':
+        x = centerX + Math.cos(angle) * radius;
+        y = centerY + Math.sin(angle) * radius;
+        vx = Math.cos(angle) * 0.5;
+        vy = Math.sin(angle) * 0.5;
+        break;
+      case 'random':
+        x = Math.random() * w;
+        y = Math.random() * h;
+        vx = (Math.random() - 0.5) * 2;
+        vy = (Math.random() - 0.5) * 2;
+        break;
+      default:
+        x = centerX + Math.cos(angle) * radius;
+        y = centerY + Math.sin(angle) * radius;
+        vx = (Math.random() - 0.5) * 1;
+        vy = (Math.random() - 0.5) * 1;
+    }
+    
+    particles.push({
+      x, y, vx, vy,
+      targetX: x,
+      targetY: y,
+      angle: angle,
+      radius: radius,
+      baseRadius: radius,
+      size: 2 + Math.random() * 4,
+      life: 0,
+      hue: (360 / count) * i,
+      energy: Math.random(),
+      speed: 0.001 + Math.random() * 0.003,
+      pattern: pattern,
+      trail: []  // For persistent trails
+    });
+  }
+}
+initParticles(systemState.particles, systemState.pattern);
+
+// 1. CONTINUOUS CRESCENDO AFTER RFO ENGAGED
+// Add a flag and logic to smoothly interpolate system parameters from phase 6 (after flash) to the final phase.
+let crescendoActive = false;
+let crescendoStartTime = null;
+let crescendoDuration = phases[phases.length-1].time - phases[6].time; // from after flash to end
+let crescendoFrom = null;
+let crescendoTo = null;
+
+function startCrescendo() {
+  crescendoActive = true;
+  crescendoStartTime = Date.now();
+  crescendoFrom = Object.assign({}, phases[6]);
+  crescendoTo = Object.assign({}, phases[phases.length-1]);
+}
+
+// In updatePhase, after the flash phase, start the crescendo and stop further phase transitions
+function updatePhase() {
+  if (animationStartTime === null) return;
+  const now = Date.now() - animationStartTime;
+  const phase = phases[currentPhase];
+
+  // For the title phase, ensure it stays visible for the full duration
+  if (currentPhase === 0 && now < phase.duration) return;
+
+  if (now >= phase.time && currentPhase < phases.length - 1) {
+    // Prepare for morphing with dynamic transition parameters
+    if (!systemState.morphing && now >= phase.time - 1000) {
+      systemState.morphing = true;
+      morphProgress = 0;
+      lastPattern = systemState.pattern;
+      systemState.transitionParams = {
+        variation: Math.random() * 0.3 + 0.85,
+        rotationBoost: Math.random() * 0.002 - 0.001,
+        uniqueOffset: Math.random() * Math.PI,
+        turbulence: Math.max(0.1, Math.random() * 0.3)
+      };
+    }
+    if (now >= phase.time) {
+      currentPhase++;
+    }
+  }
+  if (systemState.morphing) {
+    morphProgress += systemState.morphRate * deltaTime * 60;
+    if (morphProgress >= 1) {
+      morphProgress = 1;
+      systemState.morphing = false;
+      systemState.pattern = phases[currentPhase].pattern;
+      lastPattern = systemState.pattern;
+    }
+  }
+  if (lastTransitionedPhase !== currentPhase) {
+    transitionToPhase(phases[currentPhase]);
+    lastTransitionedPhase = currentPhase;
+  }
+}
+
+// Enhanced pattern morphing that matches text descriptions
+function morphToPattern(newPattern, progress) {
+  // Cache calculations for performance
+  const count = particles.length;
+  const halfCount = count / 2;
+  
+  // Apply transition params for variability, use defaults if not defined
+  const transParams = systemState.transitionParams || {
+    variation: 1.0, 
+    rotationBoost: 0,
+    uniqueOffset: 0,
+    turbulence: 0.1
+  };
+  
+  // Add some perlin-like noise effect during transitions
+  const noiseTime = time * 0.01;
+  const noiseFactor = progress * (1 - progress) * 4 * transParams.turbulence; // Peak at progress = 0.5
+  
+  particles.forEach((p, i) => {
+    const angle = (Math.PI * 2 / count) * i;
+    const normalizedI = i / count;
+    
+    // Generate a unique noise value for this particle during transition
+    // This creates more organic, less repetitive movement
+    const noise = {
+      x: Math.sin(noiseTime + i * 0.37 + transParams.uniqueOffset) * noiseFactor,
+      y: Math.cos(noiseTime + i * 0.53 + transParams.uniqueOffset) * noiseFactor,
+    };
+    
+    // Use cached calculations when possible
+    switch(newPattern) {
+      case 'breathing':
+        // Gentle expansion/contraction for "internal dynamics"
+        const breathRadius = p.baseRadius * (1 + Math.sin(time * 0.003 + i * 0.1) * 0.15);
+        p.targetX = centerX + Math.cos(angle) * breathRadius * transParams.variation + noise.x * 30;
+        p.targetY = centerY + Math.sin(angle) * breathRadius * transParams.variation + noise.y * 30;
+        break;
+        
+      case 'random':
+        // Truly unstable random movement - optimized to avoid recalculation every frame
+        if (time % 30 === 0 || !p.randomTarget) {
+          p.randomTarget = {
+            x: p.x + (Math.random() - 0.5) * 100 * (1 + noiseFactor),
+            y: p.y + (Math.random() - 0.5) * 100 * (1 + noiseFactor)
+          };
+        }
+        if (p.randomTarget) {
+          p.targetX = p.randomTarget.x + noise.x * 50;
+          p.targetY = p.randomTarget.y + noise.y * 50;
+        }
+        break;
+        
+      case 'chaos':
+        // Unpredictable charge carrier movement - smoother chaos
+        const chaosTime = time * 0.01;
+        const chaosFactor = (15 + Math.sin(normalizedI * Math.PI * 2) * 5) * (1 + noiseFactor * 0.5);
+        p.targetX = p.x + Math.sin(chaosTime + i * 0.7) * chaosFactor + noise.x * 40;
+        p.targetY = p.y + Math.cos(chaosTime + i * 0.9) * chaosFactor + noise.y * 40;
+        p.vx = p.vx * 0.9 + (Math.random() - 0.5) * (0.4 + noiseFactor * 0.3);
+        p.vy = p.vy * 0.9 + (Math.random() - 0.5) * (0.4 + noiseFactor * 0.3);
+        break;
+        
+      case 'waves':
+        // Out of phase vibrational patterns - more harmonious waves with subtle variations
+        const phaseOffset = i * 0.3 + progress * Math.sin(normalizedI * 5) * 0.2;
+        const waveAmplitude = (40 + Math.sin(normalizedI * Math.PI * 4) * 10) * transParams.variation;
+        const waveFreq = 0.01 + progress * 0.002 * Math.sin(normalizedI * 3);
+        const waveX = centerX + Math.cos(angle) * p.radius + 
+                     Math.sin(time * waveFreq + phaseOffset) * waveAmplitude + noise.x * 25;
+        const waveY = centerY + Math.sin(angle) * p.radius + 
+                     Math.cos(time * waveFreq * 1.5 + phaseOffset * 1.5) * waveAmplitude + noise.y * 25;
+        p.targetX = waveX;
+        p.targetY = waveY;
+        break;
+        
+      case 'explosion':
+        // RFO ENGAGED explosion - more dramatic with better falloff
+        const explodeProgress = easing.easeOutQuad(progress);
+        const explodeRadius = p.radius * (1 + explodeProgress * 6) * transParams.variation;
+        const explodeAngle = angle + noise.x * 0.2; // Slight angle variation
+        p.targetX = centerX + Math.cos(explodeAngle) * explodeRadius + noise.x * 40;
+        p.targetY = centerY + Math.sin(explodeAngle) * explodeRadius + noise.y * 40;
+        // Add a burst effect (softened)
+        if (progress < 0.3) {
+          const burstPower = (0.3 - progress) / 0.3 * 3 * (1 + noiseFactor * 0.5); // was 8
+          p.vx += Math.cos(angle) * burstPower * deltaTime * 10; // was 30
+          p.vy += Math.sin(angle) * burstPower * deltaTime * 10; // was 30
+        }
+        break;
+        
+      case 'converging':
+        // Beginning to sense resonance - particles start grouping
+        const groupCount = 6;
+        const groupIndex = Math.floor(i / (count / groupCount));
+        const groupAngle = (Math.PI * 2 / groupCount) * groupIndex + time * 0.001 + transParams.uniqueOffset;
+        const groupRadius = (100 + (i % (count / groupCount)) / (count / groupCount) * 120) * transParams.variation;
+        p.targetX = centerX + Math.cos(groupAngle) * groupRadius + noise.x * 20;
+        p.targetY = centerY + Math.sin(groupAngle) * groupRadius + noise.y * 20;
+        break;
+        
+      case 'vortex':
+        // Nodes align and begin to synchronize - smoother vortex
+        const vortexSpeed = 0.001 + normalizedI * 0.001 + transParams.rotationBoost;
+        const vortexAngle = angle + time * vortexSpeed * (1 + progress) + noise.x * 0.1;
+        const vortexRadius = p.radius * (1.2 - progress * 0.2) * transParams.variation;
+        p.targetX = centerX + Math.cos(vortexAngle) * vortexRadius + noise.x * 15;
+        p.targetY = centerY + Math.sin(vortexAngle) * vortexRadius + noise.y * 15;
+        break;
+        
+      case 'harmonic':
+        // Stable harmonic structure - add recursive ripples
+        const harmonicFreq = 0.001 + transParams.rotationBoost * 0.5;
+        const harmonicPhase = i / count * Math.PI * 4 + noise.x * 0.2;
+        const ripple = Math.sin(time * 0.01 + i * 0.5 + Math.sin(time * 0.003 + i)) * 0.15;
+        const harmonicAngle = angle + Math.sin(time * harmonicFreq + harmonicPhase) * (0.2 + noiseFactor * 0.1) + ripple;
+        const harmonicRadius = p.baseRadius * (0.9 + Math.sin(harmonicPhase + time * 0.002) * 0.1 + ripple) * transParams.variation;
+        p.targetX = centerX + Math.cos(harmonicAngle) * harmonicRadius + noise.x * 10;
+        p.targetY = centerY + Math.sin(harmonicAngle) * harmonicRadius + noise.y * 10;
+        // Recursive color modulation
+        if (currentPhase >= 8) {
+          p.size = 2 + 4 * Math.abs(Math.sin(harmonicPhase + time * 0.01 + Math.sin(i)));
+          p.hue = (p.hue + 30 * Math.sin(harmonicPhase + time * 0.01)) % 360;
+        }
+        break;
+        
+      case 'mandala':
+        // Resonance persists - recursive sub-spirals
+        const layers = 3;
+        const layer = i % layers;
+        const particlesPerLayer = count / layers;
+        const layerNormalized = (i % particlesPerLayer) / particlesPerLayer;
+        const layerAngle = Math.PI * 2 * layerNormalized + layer * (Math.PI / layers) + time * 0.0005 + transParams.uniqueOffset * layerNormalized;
+        const layerRadius = p.baseRadius * (0.6 + layer * 0.2) * transParams.variation;
+        // Recursive sub-spiral
+        const spiralDepth = 1 + 0.5 * Math.sin(time * 0.002 + i);
+        const spiralAngle = layerAngle + Math.sin(time * 0.003 + i * 0.2) * spiralDepth;
+        const spiralRadius = layerRadius + 20 * Math.sin(time * 0.01 + i * 0.5);
+        p.targetX = centerX + Math.cos(spiralAngle) * spiralRadius + noise.x * 8;
+        p.targetY = centerY + Math.sin(spiralAngle) * spiralRadius + noise.y * 8;
+        // Recursive color/size
+        if (currentPhase >= 8) {
+          p.size = 2 + 4 * Math.abs(Math.sin(spiralAngle + time * 0.01 + Math.sin(i)));
+          p.hue = (p.hue + 60 * Math.sin(spiralAngle + time * 0.01)) % 360;
+        }
+        break;
+        
+      case 'perfect':
+        // Summary - perfect coherence with golden ratio spiral
+        const rings = 3;
+        const ringIndex = i % rings;
+        const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio
+        const perfectAngle = angle + time * 0.0003 + transParams.rotationBoost * 0.2 + noise.x * 0.05;
+        const perfectRadius = (100 + ringIndex * 60 + (i / count) * 50) * transParams.variation;
+        const spiralX = centerX + Math.cos(perfectAngle * phi) * perfectRadius + noise.x * 5;
+        const spiralY = centerY + Math.sin(perfectAngle * phi) * perfectRadius + noise.y * 5;
+        p.targetX = spiralX;
+        p.targetY = spiralY;
+        break;
+        
+      case 'circle':
+      default:
+        const circleRadius = p.baseRadius * transParams.variation;
+        const circleAngle = angle + noise.x * 0.1;
+        p.targetX = centerX + Math.cos(circleAngle) * circleRadius + noise.x * 10;
+        p.targetY = centerY + Math.sin(circleAngle) * circleRadius + noise.y * 10;
+        break;
+    }
+  });
+}
+
+// Transition handling
+function transitionToPhase(phase) {
+  const overlay = document.getElementById('textOverlay');
+  
+  if (phase.type === 'title') {
+    // For the main title phase, we're using the pre-defined HTML elements
+    // that are already in the DOM and will be animated by CSS
+    if (phase.id === 0) {
+      // Instead of manipulating these elements with JavaScript,
+      // we're relying on the CSS animations with defined delays
+      
+      // We only need to schedule the fade-out of the entire overlay
+      const fadeOutTime = 1200; // 1.2 seconds
+      setTimeout(() => {
+        overlay.style.transition = `opacity ${fadeOutTime}ms ease-in-out`;
+        overlay.style.opacity = '0';
+      }, phase.duration - fadeOutTime); // Start fade at 8.8s, end at 10s
+    }
+  } else if (phase.type === 'flash') {
+    // Clear previous content for non-title phases
+    overlay.innerHTML = '';
+    overlay.style.transition = '';
+    overlay.style.opacity = '1';
+    
+    overlay.innerHTML = `<h2 class="flash-text">${phase.text[0]}</h2>`;
+    canvas.style.filter = 'brightness(1.5) contrast(1.2) blur(0.5px)';
+    setTimeout(() => {
+      canvas.style.filter = 'brightness(1.1) contrast(1.05) blur(0.2px)';
+    }, phase.duration - 1000);
+  } else if (phase.type === 'summary') {
+    // Clear previous content
+    overlay.innerHTML = '';
+    overlay.style.transition = '';
+    overlay.style.opacity = '1';
+    
+    overlay.innerHTML = `
+      <h2 class="summary-title">${phase.text[0]}</h2>
+      <p class="summary-subtitle">${phase.text[1]}</p>
+    `;
+    canvas.style.filter = 'brightness(1.1) contrast(1.05) blur(0.3px)';
+    
+    // Show the Read On button after a delay in the summary phase
+    const readOnButton = document.getElementById('readOnButton');
+    if (readOnButton) {
+      setTimeout(() => {
+        readOnButton.style.opacity = '1';
+        readOnButton.style.pointerEvents = 'auto'; // Make it clickable immediately
+      }, 3000); // Show after 3 seconds in the summary phase
+    }
+  } else {
+    // Clear previous content
+    overlay.innerHTML = '';
+    overlay.style.transition = '';
+    overlay.style.opacity = '1';
+    
+    phase.text.forEach((line, index) => {
+      const div = document.createElement('p');
+      div.className = 'phase-text';
+      div.textContent = line;
+      div.style.animation = `fadeIn 1.5s ease-out ${index * 0.4}s forwards`;
+      overlay.appendChild(div);
+    });
+    // Only fade out text at the end of the phase
+    const fadeOutTime = 1200;
+    setTimeout(() => {
+      overlay.style.transition = `opacity ${fadeOutTime}ms`;
+      overlay.style.opacity = '0';
+    }, phase.duration - fadeOutTime);
+  }
+}
+
+// Update system state
+function updateSystemState() {
+  const phase = phases[currentPhase];
+  
+  systemState.particles += (phase.particles - systemState.particles) * systemState.adaptRate;
+  systemState.feedback += (phase.feedback - systemState.feedback) * systemState.adaptRate;
+  systemState.blur += (phase.blur - systemState.blur) * systemState.adaptRate;
+  systemState.rotation += (phase.rotation - systemState.rotation) * systemState.adaptRate;
+  
+  // Update particle count
+  const targetCount = Math.floor(systemState.particles);
+  if (Math.abs(particles.length - targetCount) > 5) {
+    initParticles(targetCount, systemState.pattern);
+  }
+}
+
+// Easing functions for smoother animations
+const easing = {
+  easeInOutQuad: t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2,
+  easeOutQuad: t => 1 - (1 - t) * (1 - t),
+  easeInOutCubic: t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+};
+
+// Frame timing variables for smooth animation
+let lastFrameTime = 0;
+let deltaTime = 0;
+
+// Add this function to optimize particle connections
+function calculateParticleConnections() {
+  // Skip this calculation if we're not in the connection phases
+  if (currentPhase < 6) return [];
+  
+  const connections = [];
+  const checkEvery = Math.max(1, Math.floor(particles.length / 80));
+  
+  for (let i = 0; i < particles.length; i += checkEvery) {
+    for (let j = i + checkEvery; j < particles.length; j += checkEvery) {
+      const p1 = particles[i];
+      const p2 = particles[j];
+      
+      const dx = p1.x - p2.x;
+      const dy = p1.y - p2.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      const maxDist = 150 + (currentPhase - 6) * 50;
+      if (dist < maxDist) {
+        const alpha = (1 - dist / maxDist) * 0.3 * ((currentPhase - 5) / 5);
+        connections.push({
+          p1, p2, alpha, dist
+        });
+      }
+    }
+  }
+  
+  return connections;
+}
+
+// Main render function
+function render(timestamp) {
+  // Initialize animationStartTime on first frame
+  if (animationStartTime === null) {
+    animationStartTime = Date.now();
+    // Immediately set up the title phase
+    transitionToPhase(phases[currentPhase]);
+  }
+
+  // Calculate delta time for frame-rate independent animations
+  if (!lastFrameTime) lastFrameTime = timestamp;
+  deltaTime = (timestamp - lastFrameTime) / 1000; // Convert to seconds
+  lastFrameTime = timestamp;
+  
+  // Cap deltaTime to avoid huge jumps
+  deltaTime = Math.min(deltaTime, 0.05);
+  
+  if (canvas.width === 0 || canvas.height === 0) {
+    requestAnimationFrame(render);
+    return;
+  }
+  
+  updatePhase();
+  updateSystemState();
+  time++;
+  
+  if (systemState.morphing) {
+    morphToPattern(phases[currentPhase].pattern, easing.easeInOutCubic(morphProgress));
+  } else {
+    morphToPattern(phases[currentPhase].pattern, 1);
+  }
+  
+  // Enhanced feedback with trails - using optimized approach
+  ctx.save();
+  
+  // Use transition feedback during transitions to prevent pumping
+  const currentFeedback = systemState.transitionFeedback || systemState.feedback;
+  ctx.globalAlpha = currentFeedback;
+  ctx.filter = `blur(${systemState.blur}px) saturate(1.03) brightness(1.01)`;
+  
+  try {
+    ctx.drawImage(canvas, 0, 0);
+  } catch (e) {
+    // Skip feedback on first frame
+  }
+  ctx.restore();
+  
+  // Clear with subtle color tint - using dynamic alpha based on deltaTime
+  const clearAlpha = (1 - currentFeedback) * 0.8;
+  const phase = currentPhase;
+  
+  if (phase < 5) {
+    ctx.fillStyle = `rgba(0, 0, 5, ${clearAlpha})`;
+  } else if (phase === 5) {
+    ctx.fillStyle = `rgba(10, 0, 10, ${clearAlpha})`;
+  } else {
+    ctx.fillStyle = `rgba(0, 0, 10, ${clearAlpha})`;
+  }
+  ctx.fillRect(0, 0, w, h);
+  
+  // Update global rotation - with smooth deltaTime
+  if (currentPhase >= 5) {
+    globalRotation += systemState.rotation * (1 + Math.sin(time * 0.001) * 0.1) * deltaTime * 60;
+  }
+  
+  // Apply transformations
+  ctx.save();
+  ctx.translate(centerX, centerY);
+  ctx.rotate(globalRotation);
+  ctx.translate(-centerX, -centerY);
+  
+  // Update and draw particles with trails - using deltaTime for smoother movement
+  particles.forEach((p, i) => {
+    p.life += deltaTime;
+    
+    // Store trail positions - optimized to be frame rate independent
+    if (time % Math.max(1, Math.floor(3 / deltaTime)) === 0) {
+      p.trail.push({x: p.x, y: p.y, hue: p.hue});
+      if (p.trail.length > 20) {
+        p.trail.shift();
+      }
+    }
+    
+    // Smooth position updates with deltaTime and additional variation
+    const transitionBoost = systemState.morphing ? 0.15 : 0;
+    const moveSpeed = (0.05 + transitionBoost) * (60 * deltaTime);
+    
+    // Add subtle oscillation during transitions for more natural movement
+    const transitionPhase = systemState.morphing ? Math.sin(time * 0.01 + i * 0.2) * 0.4 : 0;
+    
+    p.x += (p.targetX - p.x) * (moveSpeed + transitionPhase) + p.vx * deltaTime * 60;
+    p.y += (p.targetY - p.y) * (moveSpeed + transitionPhase) + p.vy * deltaTime * 60;
+    
+    // Gradually reduce velocity, but let transitions keep movement alive
+    const dampingFactor = systemState.morphing ? 0.985 : 0.98;
+    p.vx *= Math.pow(dampingFactor, deltaTime * 60);
+    p.vy *= Math.pow(dampingFactor, deltaTime * 60);
+    
+    // After RFO ENGAGED, add coherent motion
+    if (currentPhase >= 5) {
+      const coherenceForce = (currentPhase - 5) / 5 * 0.02;
+      p.angle += p.speed * (1 + coherenceForce) * deltaTime * 60;
+      const wave = Math.sin(time * 0.001 + i * 0.1) * coherenceForce;
+      p.vx += Math.cos(p.angle + globalRotation) * wave * deltaTime * 60;
+      p.vy += Math.sin(p.angle + globalRotation) * wave * deltaTime * 60;
+    }
+    
+    // Draw trails with improved antialiasing
+    if (p.trail.length > 1) {
+      // Create a smoother trail with bezier curves for longer trails
+      if (p.trail.length > 4) {
+        ctx.beginPath();
+        ctx.moveTo(p.trail[0].x, p.trail[0].y);
+        
+        for (let idx = 0; idx < p.trail.length - 1; idx++) {
+          const curr = p.trail[idx];
+          const next = p.trail[idx + 1];
+          
+          // If we have points before and after, make smooth bezier
+          if (idx > 0 && idx < p.trail.length - 2) {
+            const prev = p.trail[idx - 1];
+            const afterNext = p.trail[idx + 2];
+            
+            // Calculate control points
+            const cpX1 = curr.x + (next.x - prev.x) * 0.2;
+            const cpY1 = curr.y + (next.y - prev.y) * 0.2;
+            const cpX2 = next.x - (afterNext.x - curr.x) * 0.2;
+            const cpY2 = next.y - (afterNext.y - curr.y) * 0.2;
+            
+            ctx.bezierCurveTo(cpX1, cpY1, cpX2, cpY2, next.x, next.y);
+          } else {
+            ctx.lineTo(next.x, next.y);
+          }
+        }
+      } else {
+        // Simple line for shorter trails
+        ctx.beginPath();
+        p.trail.forEach((point, idx) => {
+          if (idx === 0) {
+            ctx.moveTo(point.x, point.y);
+          } else {
+            ctx.lineTo(point.x, point.y);
+          }
+        });
+      }
+      
+      const trailAlpha = systemState.trailOpacity * (1 - currentPhase / 10);
+      ctx.strokeStyle = `hsla(${p.hue}, 70%, 50%, ${trailAlpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    
+    // Enhanced color evolution
+    const phaseShift = currentPhase * 30;
+    const hue = (p.hue + time * 0.1 + i * 2 + phaseShift) % 360;
+    const saturation = 70 + Math.sin(time * 0.01 + i) * 20;
+    const lightness = 50 + Math.sin(time * 0.01 + i) * 20;
+    const alpha = 0.6 + p.energy * 0.4;
+    
+    // Draw particle with enhanced glow
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    
+    const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 4);
+    gradient.addColorStop(0, `hsla(${hue}, ${saturation}%, ${lightness + 20}%, ${alpha})`);
+    gradient.addColorStop(0.3, `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha * 0.7})`);
+    gradient.addColorStop(0.6, `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha * 0.4})`);
+    gradient.addColorStop(1, `hsla(${hue}, ${saturation}%, ${lightness}%, 0)`);
+    
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    // Add core bright point
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * 0.3, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${hue}, 100%, 90%, ${alpha})`;
+    ctx.fill();
+  });
+  
+  // Draw connections separately for better performance
+  if (currentPhase >= 6) {
+    // Calculate connections once per frame
+    const connections = calculateParticleConnections();
+    
+    // Draw all connections
+    connections.forEach(conn => {
+      const p1 = conn.p1;
+      const p2 = conn.p2;
+      const alpha = conn.alpha;
+      
+      const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+      grad.addColorStop(0, `hsla(${p1.hue}, 70%, 70%, ${alpha})`);
+      grad.addColorStop(0.5, `hsla(${(p1.hue + p2.hue) / 2}, 70%, 70%, ${alpha * 0.5})`);
+      grad.addColorStop(1, `hsla(${p2.hue}, 70%, 70%, ${alpha})`);
+      
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1 + alpha * 2;
+      ctx.stroke();
+    });
+  }
+  
+  // Optimized bloom effect
+  if (systemState.bloom) {
+    ctx.globalCompositeOperation = 'screen';
+    ctx.filter = `blur(${1 + systemState.bloomIntensity * 2}px)`;
+    ctx.globalAlpha = systemState.bloomIntensity * 0.3;
+    particles.forEach(p => {
+      const size = p.size * 2.5;
+      const bloomGradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 3);
+      bloomGradient.addColorStop(0, `hsla(${p.hue}, 100%, 70%, 0.8)`);
+      bloomGradient.addColorStop(0.5, `hsla(${p.hue}, 80%, 60%, 0.3)`);
+      bloomGradient.addColorStop(1, `hsla(${p.hue}, 80%, 60%, 0)`);
+      
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, size * 3, 0, Math.PI * 2);
+      ctx.fillStyle = bloomGradient;
+      ctx.fill();
+    });
+    ctx.filter = 'none';
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+  }
+  
+  // Draw elegant finale pattern with optimized rendering
+  if (currentPhase >= 8) {
+    // Cache calculations
+    const patternTime = time * 0.0005;
+    
+    for (let layer = 0; layer < 5; layer++) {
+      const layerVertices = 6 + layer * 2;
+      const layerRadius = 100 + layer * 30;
+      const layerVariation = Math.sin(patternTime + layer * 0.2) * 10;
+      
+      // Pre-calculate vertex positions for better performance
+      const vertices = [];
+      for (let i = 0; i <= layerVertices; i++) {
+        const angle = (i / layerVertices) * Math.PI * 2 + patternTime + layer * 0.15;
+        const radius = layerRadius + layerVariation;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+        vertices.push({x, y});
+      }
+      
+      // Draw the pattern
+      ctx.beginPath();
+      ctx.strokeStyle = `hsla(${(layer * 60 + time * 0.05) % 360}, 70%, 60%, ${0.3 - layer * 0.05})`;
+      ctx.lineWidth = 1.5;
+      
+      for (let i = 0; i < vertices.length; i++) {
+        if (i === 0) {
+          ctx.moveTo(vertices[i].x, vertices[i].y);
+        } else {
+          ctx.lineTo(vertices[i].x, vertices[i].y);
+        }
+      }
+      
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }
+  
+  ctx.restore();
+  
+  // After drawing all particles in the render loop, add:
+  if (currentPhase >= 7) {
+    ctx.save();
+    ctx.globalAlpha = 0.08 + 0.04 * Math.sin(time * 0.01);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.drawImage(canvas, 0, 0, w, h);
+    ctx.restore();
+  }
+  
+  requestAnimationFrame(render);
+}
+
+// Initialize with optimized start
+function initializeAnimation() {
+  if (initCanvas()) {
+    animationStartTime = Date.now();
+    initParticles(systemState.particles, systemState.pattern);
+    
+    // Add canvas classes
+    canvas.className = '';
+    
+    // Initialize audio
+    audioSystem.init();
+    
+    // Start animation loop
+    requestAnimationFrame(render);
+  } else {
+    // Retry if canvas isn't ready
+    setTimeout(initializeAnimation, 100);
+  }
+}
+
+// Handle resize
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+// PDF Viewer Functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const readOnButton = document.getElementById('readOnButton');
+  const pdfOverlay = document.getElementById('pdfOverlay');
+  const prevButton = document.getElementById('prevButton');
+  const nextButton = document.getElementById('nextButton');
+  const currentPageSpan = document.getElementById('currentPage');
+  const pdfPages = document.querySelectorAll('.pdf-page');
+  
+  let currentPageIndex = 0;
+  const totalPages = pdfPages.length;
+  
+  // Show first page by default
+  if (pdfPages.length > 0) {
+    pdfPages[0].classList.add('active');
+  }
+  
+  // Read On button click handler
+  readOnButton.addEventListener('click', function() {
+    // Show the PDF overlay
+    pdfOverlay.style.display = 'flex';
+    // Use requestAnimationFrame for smooth animation
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        pdfOverlay.style.opacity = '1';
+      }, 10);
+    });
+    
+    // Hide the Read On button
+    readOnButton.style.opacity = '0';
+    readOnButton.style.pointerEvents = 'none';
+  });
+  
+  // Previous page button handler
+  prevButton.addEventListener('click', function() {
+    if (currentPageIndex > 0) {
+      // Hide current page
+      pdfPages[currentPageIndex].classList.remove('active');
+      // Decrease page index
+      currentPageIndex--;
+      // Show new current page
+      pdfPages[currentPageIndex].classList.add('active');
+      // Update page indicator
+      currentPageSpan.textContent = currentPageIndex + 1;
+    }
+  });
+  
+  // Next page button handler
+  nextButton.addEventListener('click', function() {
+    if (currentPageIndex < totalPages - 1) {
+      // Hide current page
+      pdfPages[currentPageIndex].classList.remove('active');
+      // Increase page index
+      currentPageIndex++;
+      // Show new current page
+      pdfPages[currentPageIndex].classList.add('active');
+      // Update page indicator
+      currentPageSpan.textContent = currentPageIndex + 1;
+    }
+  });
+  
+  // Add keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (pdfOverlay.style.display === 'flex') {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        prevButton.click();
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+        nextButton.click();
+      } else if (e.key === 'Escape') {
+        pdfOverlay.style.opacity = '0';
+        setTimeout(() => {
+          pdfOverlay.style.display = 'none';
+        }, 1000);
+      }
+    }
+  });
+});
+
+// Audio system
+let audioSystem = {
+  initialized: false,
+  context: null,
+  masterGain: null,
+  limiter: null,
+  convolver: null, // reverb
+  reverbGain: null,
+  delay: null,
+  delayFeedback: null,
+  activeOscillators: [],
+  muted: false,
+  
+  // Current audio state
+  currentHarmonic: 0,
+  entropyLevel: 0.5,
+  
+  // Audio parameters mapped to visual states
+  harmonics: [
+    [1, 0.8, 0.5, 0.3, 0.1],    // ordered (circle, perfect)
+    [1, 0.3, 0.7, 0.0, 0.4],    // breathing, harmonic
+    [1, 0.6, 0.0, 0.4, 0.2],    // vortex, mandala
+    [1, 0.2, 0.8, 0.3, 0.0],    // converging
+    [0.8, 1, 0.4, 0.6, 0.2]     // random, chaos, waves
+  ],
+  
+  init: function() {
+    if (this.initialized) return;
+    
+    try {
+      // Check for AudioContext support
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      
+      if (!AudioContext) {
+        console.error("Web Audio API is not supported in this browser");
+        return;
+      }
+      
+      this.context = new AudioContext();
+      
+      // Create master gain and limiter
+      this.masterGain = this.context.createGain();
+      this.limiter = this.context.createDynamicsCompressor();
+      
+      this.limiter.threshold.setValueAtTime(-1, this.context.currentTime);
+      this.limiter.knee.setValueAtTime(0, this.context.currentTime);
+      this.limiter.ratio.setValueAtTime(20, this.context.currentTime);
+      this.limiter.attack.setValueAtTime(0.003, this.context.currentTime);
+      this.limiter.release.setValueAtTime(0.25, this.context.currentTime);
+      
+      // Set master gain - lower volume for safety
+      this.masterGain.gain.value = 0.25;
+      
+      // Create reverb
+      this.convolver = this.context.createConvolver();
+      this.createReverb();
+      
+      // Create reverb gain
+      this.reverbGain = this.context.createGain();
+      this.reverbGain.gain.value = 0.2;
+      
+      // Create delay
+      this.delay = this.context.createDelay();
+      this.delay.delayTime.value = 0.7;
+      this.delayFeedback = this.context.createGain();
+      this.delayFeedback.gain.value = 0.1;
+      
+      // Connect audio chain
+      this.delay.connect(this.delayFeedback);
+      this.delayFeedback.connect(this.delay);
+      this.convolver.connect(this.reverbGain);
+      this.reverbGain.connect(this.masterGain);
+      this.delay.connect(this.masterGain);
+      this.masterGain.connect(this.limiter);
+      this.limiter.connect(this.context.destination);
+      
+      this.initialized = true;
+      console.log("Audio system initialized");
+      
+      // Update audio toggle button to show current state
+      const audioToggle = document.getElementById('audioToggle');
+      if (audioToggle) {
+        audioToggle.textContent = '🔊';
+      }
+      
+      // Start with default state
+      this.updateFromPhase(phases[0]);
+    } catch (e) {
+      console.error("Failed to initialize audio:", e);
+      // Show error state on button
+      const audioToggle = document.getElementById('audioToggle');
+      if (audioToggle) {
+        audioToggle.textContent = '❌';
+        audioToggle.style.backgroundColor = 'rgba(150, 30, 30, 0.7)';
+      }
+    }
+  },
+  
+  // Explicitly control audio context state
+  resume: function(callback) {
+    if (!this.initialized) {
+      this.init();
+      // Try again after init
+      setTimeout(() => this.resume(callback), 50);
+      return;
+    }
+    
+    if (this.context && this.context.state === 'suspended') {
+      this.context.resume().then(() => {
+        console.log('AudioContext resumed');
+        // Unmute if we're resuming
+        if (this.muted) {
+          this.toggleMute();
+        }
+        if (typeof callback === 'function') {
+          // Wait 300ms to ensure context is fully running
+          setTimeout(callback, 300);
+        }
+      }).catch(err => {
+        console.error('Error resuming AudioContext:', err);
+      });
+    } else {
+      if (typeof callback === 'function') {
+        // Wait 300ms even if already running, for consistency
+        setTimeout(callback, 300);
+      }
+    }
+  },
+  
+  toggleMute: function() {
+    if (!this.initialized) return;
+    
+    this.muted = !this.muted;
+    const audioToggle = document.getElementById('audioToggle');
+    
+    if (this.muted) {
+      // Store current volume and set to 0
+      this._previousVolume = this.masterGain.gain.value;
+      this.masterGain.gain.value = 0;
+      if (audioToggle) {
+        audioToggle.textContent = '🔇';
+      }
+    } else {
+      // Restore previous volume
+      this.masterGain.gain.value = this._previousVolume || 0.25;
+      if (audioToggle) {
+        audioToggle.textContent = '🔊';
+      }
+    }
+  },
+  
+  // Added new method to create immediate sound
+  createImmediateSound: function() {
+    if (!this.initialized || this.muted) return;
+    
+    try {
+      // Create oscillator and gain only after context is running
+      const osc = this.context.createOscillator();
+      const gain = this.context.createGain();
+      
+      osc.frequency.value = 440;
+      osc.type = 'sine';
+      
+      // Use a longer attack time (0.25s)
+      gain.gain.setValueAtTime(0, this.context.currentTime);
+      gain.gain.linearRampToValueAtTime(0.2, this.context.currentTime + 0.25);
+      gain.gain.linearRampToValueAtTime(0, this.context.currentTime + 2);
+      
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      
+      osc.start();
+      osc.stop(this.context.currentTime + 2);
+      
+      console.log("Playing immediate sound");
+    } catch (e) {
+      console.error("Error playing immediate sound:", e);
+    }
+  },
+  
+  createReverb: function() {
+    let duration = 4;
+    let decay = 2.0;
+    let sampleRate = this.context.sampleRate;
+    let length = sampleRate * duration;
+    let impulse = this.context.createBuffer(2, length, sampleRate);
+    let left = impulse.getChannelData(0);
+    let right = impulse.getChannelData(1);
+    
+    for (let i = 0; i < length; i++) {
+      let n = i / length;
+      // More natural reverb decay
+      left[i] = (Math.random() * 2 - 1) * Math.pow(1 - n, decay);
+      right[i] = (Math.random() * 2 - 1) * Math.pow(1 - n, decay);
+    }
+    
+    this.convolver.buffer = impulse;
+  },
+  
+  updateFromPhase: function(phase) {
+    if (!this.initialized) this.init();
+    
+    // Map phase type to audio characteristics
+    switch(phase.type) {
+      case 'title':
+        // Gentle, ambient sound
+        this.entropyLevel = 0.2;
+        this.currentHarmonic = 0;
+        break;
+        
+      case 'content':
+        // Slightly more active but still gentle
+        this.entropyLevel = 0.3;
+        this.currentHarmonic = 1;
+        break;
+        
+      case 'flash':
+        // Chaotic, intense sound
+        this.entropyLevel = 0.8;
+        this.currentHarmonic = 4;
+        break;
+        
+      case 'summary':
+      case 'finale':
+        // Harmonious, resolved sound
+        this.entropyLevel = 0.2;
+        this.currentHarmonic = 0;
+        break;
+        
+      default:
+        // Default state
+        this.entropyLevel = 0.4;
+        this.currentHarmonic = 2;
+    }
+    
+    // Map phase pattern to specific audio characteristics
+    switch(phase.pattern) {
+      case 'circle':
+      case 'perfect':
+        this.currentHarmonic = 0;
+        break;
+        
+      case 'breathing':
+      case 'harmonic':
+        this.currentHarmonic = 1;
+        break;
+        
+      case 'vortex':
+      case 'mandala':
+        this.currentHarmonic = 2;
+        break;
+        
+      case 'converging':
+        this.currentHarmonic = 3;
+        break;
+        
+      case 'random':
+      case 'chaos':
+      case 'waves':
+        this.currentHarmonic = 4;
+        this.entropyLevel = Math.min(1, this.entropyLevel + 0.3);
+        break;
+        
+      case 'explosion':
+        // Special case for explosion - create a burst sound
+        this.createBurst();
+        break;
+    }
+    
+    // Clean up old oscillators
+    this.cleanupOscillators();
+    
+    // Create new sounds appropriate for the phase
+    this.createSoundForPhase(phase);
+  },
+  
+  createSoundForPhase: function(phase) {
+    try {
+      // Base frequency depends on the pattern type
+      const baseFreq = 55 + (phase.id * 5);
+      
+      // Create only 1 oscillator for this phase (performance)
+      const noteCount = 1;
+      
+      for (let i = 0; i < noteCount; i++) {
+        // Create a note using the current harmonic series
+        this.createNote(
+          baseFreq, // frequency
+          2,        // duration in seconds (shorter)
+          0.10,     // gain (lower)
+          0         // pan (center)
+        );
+      }
+    } catch (e) {
+      console.error("Error creating sound for phase:", e);
+    }
+  },
+  
+  createNote: function(frequency, duration, baseGain, pan) {
+    if (!this.initialized || this.muted) return;
+    
+    try {
+      // Create panner
+      const panner = this.context.createStereoPanner();
+      panner.pan.value = pan;
+      
+      // Create main gain
+      const gain = this.context.createGain();
+      
+      // Create oscillator bank with harmonics
+      let oscs = [];
+      
+      // Only use the first 2 harmonics for performance
+      this.harmonics[this.currentHarmonic].slice(0,2).forEach((level, i) => {
+        if (level > 0) {
+          const osc = this.context.createOscillator();
+          const oscGain = this.context.createGain();
+          osc.type = i === 0 ? "sine" : "triangle";
+          osc.frequency.value = frequency * (i + 1);
+          osc.detune.value = (Math.random() - 0.5) * this.entropyLevel * 20;
+          oscGain.gain.value = baseGain * level;
+          osc.connect(oscGain);
+          oscGain.connect(gain);
+          oscs.push(osc);
+          osc.start();
+          osc.stop(this.context.currentTime + duration);
+        }
+      });
+      
+      // Create envelope
+      const now = this.context.currentTime;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(baseGain, now + 1);
+      gain.gain.setValueAtTime(baseGain, now + duration - 1);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      
+      // Connect to outputs with mix based on entropy
+      const dryGain = this.context.createGain();
+      const wetGain = this.context.createGain();
+      const delayGain = this.context.createGain();
+      
+      dryGain.gain.value = 1.0;
+      wetGain.gain.value = 0.1 + this.entropyLevel * 0.2;  // Less reverb
+      delayGain.gain.value = 0.05 + this.entropyLevel * 0.1;  // Less delay
+      
+      gain.connect(panner);
+      panner.connect(dryGain).connect(this.masterGain);
+      panner.connect(wetGain).connect(this.convolver);
+      panner.connect(delayGain).connect(this.delay);
+      
+      // Keep track of oscillators to clean up later
+      this.activeOscillators.push({
+        oscs: oscs,
+        endTime: now + duration
+      });
+      
+      // Aggressively clean up old oscillators
+      this.cleanupOscillators(true);
+    } catch (e) {
+      console.error("Error creating note:", e);
+    }
+  },
+  
+  createBurst: function() {
+    if (!this.initialized || this.muted) return;
+    
+    try {
+      // Create a noise burst
+      const bufferSize = 2 * this.context.sampleRate;
+      const noiseBuffer = this.context.createBuffer(1, bufferSize, this.context.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      
+      const noise = this.context.createBufferSource();
+      noise.buffer = noiseBuffer;
+      
+      // Create a bandpass filter
+      const bpf = this.context.createBiquadFilter();
+      bpf.type = "bandpass";
+      bpf.frequency.value = 800;
+      bpf.Q.value = 0.5;
+      
+      // Create envelope - INCREASED volume
+      const gain = this.context.createGain();
+      const now = this.context.currentTime;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.6, now + 0.02); // Increased from 0.3 to 0.6
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+      
+      // Connect
+      noise.connect(bpf);
+      bpf.connect(gain);
+      gain.connect(this.masterGain);
+      gain.connect(this.convolver);
+      
+      noise.start();
+      noise.stop(now + 1.5);
+    } catch (e) {
+      console.error("Error creating burst:", e);
+    }
+  },
+  
+  cleanupOscillators: function(aggressive) {
+    if (!this.initialized) return;
+    const now = this.context.currentTime;
+    // Remove oscillators that have finished playing
+    this.activeOscillators = this.activeOscillators.filter(item => {
+      if (item.endTime <= now) {
+        item.oscs.forEach(osc => {
+          try { osc.stop(); osc.disconnect(); } catch (e) {}
+        });
+        return false;
+      }
+      return true;
+    });
+    // If we have too many active oscillators, remove the oldest ones
+    const maxOsc = aggressive ? 5 : 20;
+    while (this.activeOscillators.length > maxOsc) {
+      const oldest = this.activeOscillators.shift();
+      oldest.oscs.forEach(osc => {
+        try { osc.stop(); osc.disconnect(); } catch (e) {}
+      });
+    }
+  }
+};
+
+// Ensure the title is visible on page load
+window.addEventListener('load', function() {
+  // Start animation and phase sequence immediately
+  initializeAnimation();
+});
+
+// In the render loop, if crescendoActive, smoothly interpolate systemState toward crescendoTo
+function lerp(a, b, t) { return a + (b - a) * t; }
+function lerpPattern(p1, p2, t) { return t < 0.5 ? p1 : p2; } // just switch at halfway
+
+if (crescendoActive) {
+  const elapsed = Date.now() - crescendoStartTime;
+  const t = Math.min(1, elapsed / crescendoDuration);
+  // Interpolate systemState toward crescendoTo
+  systemState.particles = lerp(crescendoFrom.particles, crescendoTo.particles, t);
+  systemState.feedback = lerp(crescendoFrom.feedback, crescendoTo.feedback, t);
+  systemState.blur = lerp(crescendoFrom.blur, crescendoTo.blur, t);
+  systemState.rotation = lerp(crescendoFrom.rotation, crescendoTo.rotation, t);
+  systemState.pattern = lerpPattern(crescendoFrom.pattern, crescendoTo.pattern, t);
+  // Optionally, interpolate other visual params as needed
+  // Show the final text overlay at the end
+  if (t === 1 && lastTransitionedPhase !== phases.length-1) {
+    transitionToPhase(phases[phases.length-1]);
+    lastTransitionedPhase = phases.length-1;
+  }
+}
+</script>
+</body>
+</html>
